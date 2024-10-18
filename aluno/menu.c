@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <mysql.h>
+#include <C:\Program Files\MySQL\MySQL Server 8.0\include\mysql.h>
 
 // Definição da struct Aluno
 typedef struct {
@@ -15,7 +15,8 @@ void exibir_menu() {
     printf("1. Inserir Aluno\n");
     printf("2. Atualizar Aluno\n");
     printf("3. Deletar Aluno\n");
-    printf("4. Sair\n");
+    printf("4. Listar Alunos\n");
+    printf("5. Sair\n");
     printf("Escolha uma opção: ");
 }
 
@@ -78,6 +79,61 @@ void atualizar_aluno(MYSQL *conexao) {
     }
 }
 
+// Função para deletar um aluno do banco de dados
+void deletar_aluno(MYSQL *conexao) {
+    int id;
+    char query[256];
+
+    // Coleta do ID do aluno que será deletado
+    printf("ID do aluno a ser deletado: ");
+    scanf("%d", &id);
+
+    // Montando a query SQL para deletar o aluno
+    sprintf(query, "DELETE FROM Aluno WHERE id=%d", id);
+
+    // Executando a query no banco de dados
+    if (mysql_query(conexao, query)) {
+        printf("Erro ao deletar aluno: %s\n", mysql_error(conexao));
+    } else {
+        printf("Aluno deletado com sucesso!\n");
+    }
+}
+
+// Função para listar todos os alunos do banco de dados
+void listar_alunos(MYSQL *conexao) {
+    MYSQL_RES *result;
+    MYSQL_ROW row;
+    char query[256];
+
+    // Montando a query SQL para listar todos os alunos
+    sprintf(query, "SELECT * FROM Aluno");
+
+    // Executando a query no banco de dados
+    if (mysql_query(conexao, query)) {
+        printf("Erro ao listar alunos: %s\n", mysql_error(conexao));
+        return;
+    }
+
+    // Pegando o resultado da query
+    result = mysql_store_result(conexao);
+
+    if (result == NULL) {
+        printf("Erro ao obter os resultados: %s\n", mysql_error(conexao));
+        return;
+    }
+
+    // Exibindo os dados dos alunos
+    printf("\n--- Lista de Alunos ---\n");
+    printf("ID\tNome\tMatrícula\tAno de Ingresso\tCurso\n");
+
+    while ((row = mysql_fetch_row(result))) {
+        printf("%s\t%s\t%s\t%s\t%s\n", row[0], row[1], row[2], row[3], row[4]);
+    }
+
+    // Liberando o resultado
+    mysql_free_result(result);
+}
+
 int main() {
     MYSQL conexao;
     int opcao;
@@ -111,10 +167,15 @@ int main() {
 
             case 3:
                 printf("Deletar Aluno foi selecionado.\n");
-                // Chamar a função de deletar aluno (a ser implementada depois)
+                deletar_aluno(&conexao);  // Chama a função de deletar aluno
                 break;
 
             case 4:
+                printf("Listar Alunos foi selecionado.\n");
+                listar_alunos(&conexao);  // Chama a função de listar alunos
+                break;
+
+            case 5:
                 printf("Saindo...\n");
                 break;
 
@@ -122,7 +183,7 @@ int main() {
                 printf("Opção inválida. Tente novamente.\n");
                 break;
         }
-    } while (opcao != 4);  // O programa continuará executando até o usuário escolher a opção "Sair"
+    } while (opcao != 5);  // O programa continuará executando até o usuário escolher a opção "Sair"
 
     // Fechar a conexão com o banco de dados
     mysql_close(&conexao);
