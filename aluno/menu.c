@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <C:\Program Files\MySQL\MySQL Server 8.0\include\mysql.h>
+#include <mysql.h>
 
 // Definição da struct Aluno
 typedef struct {
